@@ -1,4 +1,4 @@
-import { View, Text, Platform, ScrollView, SectionList, Pressable, Alert } from 'react-native';
+import { View, Text, Platform, ScrollView, SectionList, Pressable, Alert, FlatList, Image, TouchableOpacity } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState} from 'react';
 import { TabsStackScreenProps } from '../Navigation/TabsNavigation';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,7 +6,7 @@ import { HeadersComponent } from './../Components/HeaderComponents/HeaderCompone
 import ImageSlider from '../Components/HomeScreenComponents/ImageSlider';
 import { ProductListParams, FetchProductsParam } from '../TypesCheck/HomeProps';
 import { CategoryCard } from '../Components/HomeScreenComponents/CategoryCard';
-import { fetchCategories, fetchProductsByCatID } from '../MiddleWares/HomeMiddleWares';
+import { fetchCategories, fetchFeaturedProducts, fetchProductsByCatID } from '../MiddleWares/HomeMiddleWares';
 import { useFocusEffect } from '@react-navigation/native';
 import { getProductByCatID } from '../../apiMongoDB/Controllers';
 
@@ -33,7 +33,15 @@ const HomeScreen = ({ navigation, route }: TabsStackScreenProps<'Home'>) => {
   const [getProductsByCatID, setGetProductsByCatID] = useState<ProductListParams[]>([]);
   const [activeCat, setActiveCat] = useState<string>('');
   const bgImg = require('../pictures/MenCategory.jpg');
+
+  const [isFeatured, setIsFeatured] = useState<boolean | null>(null);
+  const [featuredProducts, setFeaturedProducts] = useState<ProductListParams[]>([]);
   
+  useEffect(() => {
+    if (isFeatured !== null) {
+        fetchFeaturedProducts({ setFeaturedProducts, isFeatured });
+    }
+}, [isFeatured]);
 
   useEffect(() => {
     fetchCategories({ setGetCategory });
@@ -136,7 +144,53 @@ const HomeScreen = ({ navigation, route }: TabsStackScreenProps<'Home'>) => {
         </ScrollView>
 
       </View>
-    </SafeAreaView> // ✅ Properly closed SafeAreaView
+      <View style={{ flexDirection: "row", justifyContent: "center", marginVertical: 10 }}>
+                <TouchableOpacity
+                    onPress={() => setIsFeatured(true)}
+                    style={{
+                        backgroundColor: isFeatured ? "#007bff" : "#ccc",
+                        padding: 10,
+                        marginRight: 10,
+                        borderRadius: 5
+                    }}>
+                    <Text style={{ color: "#fff" }}>Sản phẩm nổi bật (True)</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    onPress={() => setIsFeatured(false)}
+                    style={{
+                        backgroundColor: !isFeatured ? "#007bff" : "#ccc",
+                        padding: 10,
+                        borderRadius: 5
+                    }}>
+                    <Text style={{ color: "#fff" }}>Sản phẩm thường (False)</Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* Danh sách sản phẩm */}
+            <FlatList
+                data={featuredProducts}
+                keyExtractor={(item) => item._id}
+                renderItem={({ item }) => (
+                    <View style={{
+                        flexDirection: "row",
+                        padding: 10,
+                        borderBottomWidth: 1,
+                        borderColor: "#ddd"
+                    }}>
+                        <Image
+                            source={{ uri: item.images[0] }}
+                            style={{ width: 80, height: 80, marginRight: 10, borderRadius: 5 }}
+                        />
+                        <View>
+                            <Text style={{ fontSize: 18, fontWeight: "bold" }}>{item.name}</Text>
+                            <Text style={{ color: "#888" }}>Giá: {item.price} VND</Text>
+                        </View>
+                    </View>
+                )}
+            />
+            
+    </SafeAreaView> 
   );
 };
 
