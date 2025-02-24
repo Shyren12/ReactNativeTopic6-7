@@ -52,9 +52,18 @@ export const getAllProducts = async (req: Request, res: Response) => {
 }
 
 
-export const getFeaturedProducts = async (req: Request, res: Response) => {
+// export const getFeaturedProducts = async (req: Request, res: Response) => {
+//     try {
+//         const result = await PRODUCTS.find({isFeatured: req.params.isFeatured});
+//         res.status(200).json(result)
+//     } catch (error) {
+//         res.status(500).json(`Product get fail! ${error}`)
+//     }
+// }
+
+export const getTrendingProducts = async (req: Request, res: Response) => {
     try {
-        const result = await PRODUCTS.find({isFeatured: req.params.isFeatured});
+        const result = await PRODUCTS.find({ isFeatured: true }).sort({ createdAt: -1 }).limit(4);
         res.status(200).json(result)
     } catch (error) {
         res.status(500).json(`Product get fail! ${error}`)
